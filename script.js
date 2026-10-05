@@ -14,6 +14,7 @@ const projects = [
       "https://player.cloudinary.com/embed/?cloud_name=r1vxjwuh&public_id=copy_969529AA-CD62-4A28-B31F-077529CE8452&controls=true&autoplay=false&muted=false",
       "https://player.cloudinary.com/embed/?cloud_name=r1vxjwuh&public_id=copy_D0926403-F0E1-42FC-AF56-7AA3FFE7FA82&controls=true&autoplay=false&muted=false",
       "https://player.cloudinary.com/embed/?cloud_name=r1vxjwuh&public_id=copy_662E45E4-D93C-4B48-A93F-74BADB25BD8E&controls=true&autoplay=false&muted=false",
+      "https://player.cloudinary.com/embed/?cloud_name=r1vxjwuh&public_id=48840DDA-FD6F-4B77-91A1-E0AED5BDF040&controls=true&autoplay=false&muted=false",
     ],
   },
   {
