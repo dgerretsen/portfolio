@@ -38,10 +38,14 @@ const projects = [
     role: "Character Design",
     tools: "Midjourney, HeyGen",
     image: "assets/project-ai-characters.webp",
+    // A { images: [...] } entry is one carousel frame; a plain string is a single image.
     gallery: [
-      "assets/projects/ai-characters/gallery-1.webp",
-      "assets/projects/ai-characters/gallery-2.webp",
-      "assets/projects/ai-characters/gallery-3.webp",
+      {
+        images: [
+          "assets/projects/ai-characters/kometa-7/captain-zoryan.webp",
+          "assets/projects/ai-characters/kometa-7/atom.webp",
+        ],
+      },
     ],
   },
   {
@@ -105,12 +109,12 @@ function openLightbox(index) {
   if (!p) return;
 
   const videos = p.videos || [];
-  const images = videos.length
+  const entries = videos.length
     ? p.gallery || []
     : p.gallery && p.gallery.length
     ? p.gallery
     : [p.image].filter(Boolean);
-  const totalItems = videos.length + images.length;
+  const totalItems = videos.length + entries.length;
   const isSingle = totalItems === 1;
 
   lightboxCat.textContent = p.category;
@@ -139,17 +143,55 @@ function openLightbox(index) {
     )
     .join("");
 
-  const imageItems = images
-    .map(
-      (src, i) => `
+  // Zoom groups: all single images share group 0 (so they page through each other);
+  // every carousel is its own group, so zoom only pages through that avatar's photos.
+  previewGroups = [entries.filter((e) => typeof e === "string")];
+  let plainIndex = 0;
+
+  const imageItems = entries
+    .map((entry) => {
+      if (typeof entry === "string") {
+        return `
       <div class="lightbox-item${isSingle ? " single" : ""}">
-        <img src="${src}" alt="${p.name}" loading="lazy" data-preview-index="${i}" />
-      </div>`
-    )
+        <img src="${entry}" alt="${p.name}" loading="lazy" data-group="0" data-preview-index="${plainIndex++}" />
+      </div>`;
+      }
+
+      const group = previewGroups.push(entry.images) - 1;
+      const many = entry.images.length > 1;
+      const slides = entry.images
+        .map(
+          (src, i) => `
+          <div class="carousel-slide">
+            <img src="${src}" alt="${p.name}" ${i ? 'loading="lazy"' : ""} data-group="${group}" data-preview-index="${i}" />
+          </div>`
+        )
+        .join("");
+      const dots = entry.images
+        .map((_, i) => `<button class="carousel-dot${i ? "" : " active"}" data-slide="${i}" aria-label="Photo ${i + 1}"></button>`)
+        .join("");
+
+      return `
+      <div class="lightbox-item carousel${isSingle ? " single" : ""}">
+        <div class="carousel-stage">
+          <div class="carousel-track">${slides}</div>
+          ${
+            many
+              ? `<button class="carousel-nav carousel-prev" aria-label="Previous photo" disabled>
+                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 6l-6 6 6 6"/></svg>
+                 </button>
+                 <button class="carousel-nav carousel-next" aria-label="Next photo">
+                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>
+                 </button>`
+              : ""
+          }
+        </div>
+        ${many ? `<div class="carousel-dots">${dots}</div>` : ""}
+      </div>`;
+    })
     .join("");
 
   lightboxGallery.innerHTML = videoItems + imageItems;
-  currentGalleryImages = images;
 
   lightbox.classList.add("is-open");
   document.body.style.overflow = "hidden";
@@ -188,6 +230,7 @@ const previewImg = document.getElementById("previewImg");
 const previewClose = document.getElementById("previewClose");
 const previewPrev = document.getElementById("previewPrev");
 const previewNext = document.getElementById("previewNext");
+let previewGroups = [];
 let currentGalleryImages = [];
 let previewIndex = 0;
 
@@ -212,8 +255,43 @@ function closePreview() {
 lightboxGallery.addEventListener("click", (e) => {
   const img = e.target.closest("img[data-preview-index]");
   if (!img) return;
+  currentGalleryImages = previewGroups[Number(img.dataset.group)] || [];
   openPreview(Number(img.dataset.previewIndex));
 });
+
+// ---------- Carousel (one frame, several photos) ----------
+function slideTo(track, index) {
+  track.scrollTo({ left: index * track.clientWidth, behavior: "smooth" });
+}
+
+lightboxGallery.addEventListener("click", (e) => {
+  const item = e.target.closest(".carousel");
+  if (!item) return;
+  const track = item.querySelector(".carousel-track");
+  const current = Math.round(track.scrollLeft / track.clientWidth);
+  if (e.target.closest(".carousel-prev")) slideTo(track, current - 1);
+  if (e.target.closest(".carousel-next")) slideTo(track, current + 1);
+  const dot = e.target.closest(".carousel-dot");
+  if (dot) slideTo(track, Number(dot.dataset.slide));
+});
+
+// scroll events don't bubble, so listen in the capture phase
+lightboxGallery.addEventListener(
+  "scroll",
+  (e) => {
+    const track = e.target;
+    if (!track.classList || !track.classList.contains("carousel-track")) return;
+    const item = track.closest(".carousel");
+    const index = Math.round(track.scrollLeft / track.clientWidth);
+    const last = track.children.length - 1;
+    item.querySelectorAll(".carousel-dot").forEach((d, i) => d.classList.toggle("active", i === index));
+    const prev = item.querySelector(".carousel-prev");
+    const next = item.querySelector(".carousel-next");
+    if (prev) prev.disabled = index <= 0;
+    if (next) next.disabled = index >= last;
+  },
+  true
+);
 
 previewClose.addEventListener("click", closePreview);
 previewPrev.addEventListener("click", () => showPreview(previewIndex - 1));
