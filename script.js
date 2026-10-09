@@ -52,6 +52,9 @@ const projects = [
     tools: "Midjourney, Kling, CapCut",
     image: "assets/project-ai-animation.webp",
     imageFit: "contain",
+    videos: [
+      "https://player.cloudinary.com/embed/?cloud_name=r1vxjwuh&public_id=copy_compressed&controls=true&autoplay=false&muted=false",
+    ],
   },
 ];
 
