@@ -29,6 +29,18 @@ const projects = [
     gallery: [
       "assets/projects/ai-photography/gallery-1.webp",
       "assets/projects/ai-photography/gallery-2.jpg",
+      {
+        title: "Dress Ad",
+        images: [
+          "assets/projects/ai-photography/dress-ad/01.jpg",
+          "assets/projects/ai-photography/dress-ad/02.jpg",
+          "assets/projects/ai-photography/dress-ad/03.jpg",
+          "assets/projects/ai-photography/dress-ad/04.jpg",
+          "assets/projects/ai-photography/dress-ad/05.jpg",
+          "assets/projects/ai-photography/dress-ad/06.jpg",
+          "assets/projects/ai-photography/dress-ad/07.jpg",
+        ],
+      },
     ],
   },
   {
@@ -38,12 +50,25 @@ const projects = [
     role: "Character Design",
     tools: "Midjourney, HeyGen",
     image: "assets/project-ai-characters.webp",
-    // A { images: [...] } entry is one carousel frame; a plain string is a single image.
+    // A { title, images: [...] } entry is one carousel frame; a plain string is a single image.
     gallery: [
       {
+        title: "KOMETA-7",
         images: [
           "assets/projects/ai-characters/kometa-7/captain-zoryan.webp",
           "assets/projects/ai-characters/kometa-7/atom.webp",
+        ],
+      },
+      {
+        title: "AI-Avatar (Tory)",
+        images: [
+          "assets/projects/ai-characters/tory/01.jpg",
+          "assets/projects/ai-characters/tory/02.jpg",
+          "assets/projects/ai-characters/tory/03.jpg",
+          "assets/projects/ai-characters/tory/04.jpg",
+          "assets/projects/ai-characters/tory/05.jpg",
+          "assets/projects/ai-characters/tory/06.jpg",
+          "assets/projects/ai-characters/tory/07.jpg",
         ],
       },
     ],
@@ -173,6 +198,14 @@ function openLightbox(index) {
 
       return `
       <div class="lightbox-item carousel${isSingle ? " single" : ""}">
+        ${
+          entry.title
+            ? `<div class="carousel-caption">
+                 <span class="carousel-title">${entry.title}</span>
+                 ${many ? `<span class="carousel-count">${entry.images.length} photos</span>` : ""}
+               </div>`
+            : ""
+        }
         <div class="carousel-stage">
           <div class="carousel-track">${slides}</div>
           ${
@@ -261,6 +294,8 @@ lightboxGallery.addEventListener("click", (e) => {
 
 // ---------- Carousel (one frame, several photos) ----------
 function slideTo(track, index) {
+  index = Math.max(0, Math.min(track.children.length - 1, index));
+  track.dataset.target = index; // remembered while the smooth scroll is still travelling
   track.scrollTo({ left: index * track.clientWidth, behavior: "smooth" });
 }
 
@@ -268,7 +303,11 @@ lightboxGallery.addEventListener("click", (e) => {
   const item = e.target.closest(".carousel");
   if (!item) return;
   const track = item.querySelector(".carousel-track");
-  const current = Math.round(track.scrollLeft / track.clientWidth);
+  // fast double-clicks must build on where the scroll is heading, not where it currently is
+  const current =
+    track.dataset.target !== undefined
+      ? Number(track.dataset.target)
+      : Math.round(track.scrollLeft / track.clientWidth);
   if (e.target.closest(".carousel-prev")) slideTo(track, current - 1);
   if (e.target.closest(".carousel-next")) slideTo(track, current + 1);
   const dot = e.target.closest(".carousel-dot");
@@ -281,6 +320,8 @@ lightboxGallery.addEventListener(
   (e) => {
     const track = e.target;
     if (!track.classList || !track.classList.contains("carousel-track")) return;
+    clearTimeout(track._settle);
+    track._settle = setTimeout(() => delete track.dataset.target, 150);
     const item = track.closest(".carousel");
     const index = Math.round(track.scrollLeft / track.clientWidth);
     const last = track.children.length - 1;

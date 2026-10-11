@@ -997,6 +997,34 @@ footer a { color: var(--blue); font-weight: 600; }
 .lightbox-item.carousel {
   display: block;
 }
+/* a carousel left alone in the last row sits centred instead of leaving a hole beside it */
+.lightbox-item.carousel:not(.single):last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+  justify-self: center;
+  width: calc(50% - 9px);
+}
+.carousel-caption {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 18px 4px;
+}
+.carousel-title {
+  font-family: var(--font-script);
+  font-style: italic;
+  font-weight: 600;
+  font-size: 1.7rem;
+  line-height: 1.1;
+  color: var(--red);
+}
+.carousel-count {
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--blue-deep);
+}
 .carousel-stage {
   position: relative;
 }
@@ -1091,6 +1119,7 @@ footer a { color: var(--blue); font-weight: 600; }
   .lightbox-gallery { grid-template-columns: 1fr; }
   .lightbox-item.single img { max-height: 50vh; }
   .carousel-track { height: clamp(300px, 56vh, 560px); }
+  .lightbox-item.carousel:not(.single):last-child:nth-child(odd) { width: auto; justify-self: stretch; }
 }
 
 /* ---------- Image Preview (zoom on top of gallery) ---------- */
