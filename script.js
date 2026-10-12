@@ -1,14 +1,10 @@
-// ---------- Data: placeholder projects ----------
-// Swap these arrays with real content — the card markup is generated automatically.
+// ---------- Project media ----------
+// Card texts live in index.html (so search engines can read them). Here we only keep
+// what the "View" window shows, in the same order as the cards.
+// A { title, images: [...] } gallery entry is one carousel frame; a plain string is a single image.
 
 const projects = [
   {
-    name: "AI Product Videos & Commercials",
-    category: "AI Video",
-    description: "Creative product advertising, beauty and lifestyle visuals, food and beverage content, cinematic product showcases, and commercial-style AI videos.",
-    role: "Concept & AI Production",
-    tools: "Kling, Seedance, CapCut",
-    image: "assets/project-ai-video.webp",
     videoRatio: "9 / 16",
     videos: [
       "https://player.cloudinary.com/embed/?cloud_name=r1vxjwuh&public_id=copy_969529AA-CD62-4A28-B31F-077529CE8452&controls=true&autoplay=false&muted=false",
@@ -19,13 +15,6 @@ const projects = [
     ],
   },
   {
-    name: "AI Images & Product Photography",
-    category: "AI Photography",
-    description: "Commercial-style product photography, branded visuals, lifestyle images, and campaign concepts created with AI.",
-    role: "Creative Direction",
-    tools: "Midjourney, GPT Image",
-    image: "assets/project-ai-photography.webp",
-    imageFit: "contain",
     gallery: [
       "assets/projects/ai-photography/gallery-1.webp",
       "assets/projects/ai-photography/gallery-2.jpg",
@@ -44,13 +33,6 @@ const projects = [
     ],
   },
   {
-    name: "AI Characters & Avatars",
-    category: "AI Characters",
-    description: "Consistent AI characters, brand mascots, avatars, and digital presenters that can be used across different scenes and content formats.",
-    role: "Character Design",
-    tools: "Midjourney, HeyGen",
-    image: "assets/project-ai-characters.webp",
-    // A { title, images: [...] } entry is one carousel frame; a plain string is a single image.
     gallery: [
       {
         title: "KOMETA-7",
@@ -74,51 +56,11 @@ const projects = [
     ],
   },
   {
-    name: "AI Animated Series & Storytelling",
-    category: "AI Animation",
-    description: "Development of short AI-generated animated series, including concept creation, character development, storyboards, keyframes, scene consistency, animation, and final editing.",
-    role: "Story & Animation",
-    tools: "Midjourney, Kling, CapCut",
-    image: "assets/project-ai-animation.webp",
-    imageFit: "contain",
     videos: [
       "https://player.cloudinary.com/embed/?cloud_name=r1vxjwuh&public_id=copy_compressed&controls=true&autoplay=false&muted=false",
     ],
   },
 ];
-
-function renderProjects() {
-  const grid = document.getElementById("projectGrid");
-  grid.innerHTML = projects
-    .map(
-      (p, i) => `
-    <article class="project-card reveal">
-      <div class="project-media"${
-        p.image
-          ? ` style="background-image:url('${p.image}');background-size:${p.imageFit || "cover"};"`
-          : ""
-      }>
-        <span class="project-cat">${p.category}</span>
-        ${p.image ? "" : `<span class="project-placeholder-label">Add image</span>`}
-      </div>
-      <div class="project-body">
-        <h3>${p.name}</h3>
-        <p>${p.description}</p>
-        <div class="project-meta">
-          <span>${p.role} · ${p.tools}</span>
-          <a href="#" class="project-link" data-project-index="${i}">View
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M5 12h14M13 6l6 6-6 6"/>
-            </svg>
-          </a>
-        </div>
-      </div>
-    </article>`
-    )
-    .join("");
-}
-
-renderProjects();
 
 // ---------- Project lightbox ----------
 const lightbox = document.getElementById("lightbox");
@@ -131,20 +73,18 @@ const lightboxGallery = document.getElementById("lightboxGallery");
 
 function openLightbox(index) {
   const p = projects[index];
-  if (!p) return;
+  const card = document.querySelectorAll(".project-card")[index];
+  if (!p || !card) return;
 
   const videos = p.videos || [];
-  const entries = videos.length
-    ? p.gallery || []
-    : p.gallery && p.gallery.length
-    ? p.gallery
-    : [p.image].filter(Boolean);
+  const entries = p.gallery || [];
   const totalItems = videos.length + entries.length;
   const isSingle = totalItems === 1;
 
-  lightboxCat.textContent = p.category;
-  lightboxTitle.textContent = p.name;
-  lightboxDesc.textContent = p.description;
+  const name = card.querySelector("h3").textContent;
+  lightboxCat.textContent = card.querySelector(".project-cat").textContent;
+  lightboxTitle.textContent = name;
+  lightboxDesc.textContent = card.querySelector(".project-body p").textContent;
 
   const videoRatio = p.videoRatio || "16 / 9";
   const isVertical = videoRatio.trim().startsWith("9");
@@ -161,7 +101,7 @@ function openLightbox(index) {
             mozallowfullscreen="true"
             frameborder="0"
             loading="lazy"
-            title="${p.name}"
+            title="${name}"
           ></iframe>
         </div>
       </div>`
@@ -178,7 +118,7 @@ function openLightbox(index) {
       if (typeof entry === "string") {
         return `
       <div class="lightbox-item${isSingle ? " single" : ""}">
-        <img src="${entry}" alt="${p.name}" loading="lazy" data-group="0" data-preview-index="${plainIndex++}" />
+        <img src="${entry}" alt="${name}" loading="lazy" data-group="0" data-preview-index="${plainIndex++}" />
       </div>`;
       }
 
@@ -188,7 +128,7 @@ function openLightbox(index) {
         .map(
           (src, i) => `
           <div class="carousel-slide">
-            <img src="${src}" alt="${p.name}" ${i ? 'loading="lazy"' : ""} data-group="${group}" data-preview-index="${i}" />
+            <img src="${src}" alt="${name}" ${i ? 'loading="lazy"' : ""} data-group="${group}" data-preview-index="${i}" />
           </div>`
         )
         .join("");

@@ -386,8 +386,11 @@ section {
 }
 
 /* ---------- About ---------- */
-.about {
+.skills {
   background: var(--cream-soft);
+}
+.about {
+  background: var(--paper);
 }
 .about-grid {
   display: grid;
